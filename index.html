@@ -1,0 +1,723 @@
+﻿<!DOCTYPE html>
+<html lang="fi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SiirtoApp</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div class="logo">
+            🚗 <span>SiirtoApp</span>
+        </div>
+
+        <button class="add-btn" onclick="openForm()">
+            + Uusi siirto
+        </button>
+
+    </header>
+
+
+    <main class="container">
+
+        <!-- DASHBOARD -->
+
+        <section class="dashboard">
+
+            <div class="stat-card">
+                <span class="stat-icon">📋</span>
+
+                <div>
+                    <small>Kaikki</small>
+                    <strong id="totalCount">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <span class="stat-icon">📅</span>
+
+                <div>
+                    <small>Tänään</small>
+                    <strong id="todayCount">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <span class="stat-icon">🚗</span>
+
+                <div>
+                    <small>Matkalla</small>
+                    <strong id="activeCount">0</strong>
+                </div>
+            </div>
+
+
+            <div class="stat-card">
+                <span class="stat-icon">✅</span>
+
+                <div>
+                    <small>Valmiit</small>
+                    <strong id="completedCount">0</strong>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- SEARCH -->
+
+        <section class="toolbar">
+
+            <input type="text"
+                   id="searchInput"
+                   placeholder="🔍 Hae siirtoja..."
+                   oninput="renderTransfers()">
+
+            <select id="filterStatus"
+                    onchange="renderTransfers()">
+                <option value="all">Kaikki</option>
+                <option value="planned">Suunnitellut</option>
+                <option value="driving">Matkalla</option>
+                <option value="completed">Valmiit</option>
+            </select>
+
+        </section>
+
+
+        <!-- SIIRROT -->
+
+        <section id="transferList"></section>
+
+    </main>
+
+
+    <!-- =========================
+         UUSI SIIRTO
+    ========================== -->
+
+    <div id="formModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2>🚗 Uusi siirtoajo</h2>
+
+                <button class="close-btn"
+                        onclick="closeForm()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <form id="transferForm">
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+
+                        <label>Asiakas</label>
+
+                        <input type="text"
+                               id="customer"
+                               placeholder="Esim. Bilar99e"
+                               required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Päivämäärä</label>
+
+                        <input type="date"
+                               id="date"
+                               required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Lähtöaika</label>
+
+                        <input type="time"
+                               id="time"
+                               required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>Ajoneuvo</label>
+
+                        <input type="text"
+                               id="vehicle"
+                               placeholder="Esim. VW Transporter">
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>Lähtöpaikka</label>
+
+                        <input type="text"
+                               id="from"
+                               placeholder="Esim. Tuusula"
+                               required>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>Kohde</label>
+
+                        <input type="text"
+                               id="to"
+                               placeholder="Esim. Tampere"
+                               required>
+
+                    </div>
+
+
+                    <div class="form-group full">
+
+                        <label>Lisätiedot</label>
+
+                        <textarea id="notes"
+                                  placeholder="Esim. avaimet toimistolla..."></textarea>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     KUVAT ENNEN LÄHTÖÄ
+                ========================== -->
+
+                <div class="photo-section">
+
+                    <div class="photo-section-title">
+
+                        <div>
+
+                            <h3>
+                                📸 Kuvat ennen lähtöä
+                            </h3>
+
+                            <p>
+                                Ota kuvat autosta ennen ajoa.
+                            </p>
+
+                        </div>
+
+                        <span id="beforePhotoCount"
+                              class="photo-count">
+                            0 / 5
+                        </span>
+
+                    </div>
+
+
+                    <div class="photo-list">
+
+
+                        <!-- MITTARISTO -->
+
+                        <div class="photo-row">
+
+                            <div class="photo-row-icon">
+                                📊
+                            </div>
+
+                            <div class="photo-row-content">
+
+                                <strong>
+                                    Mittaristo
+                                </strong>
+
+                                <span id="before-mittaristo-status">
+                                    Ei kuvaa
+                                </span>
+
+                            </div>
+
+                            <label class="photo-button">
+
+                                Lisää kuva
+
+                                <input type="file"
+                                       id="before-mittaristo"
+                                       accept="image/*"
+                                       capture="environment"
+                                       onchange="addPhoto('before', 'mittaristo')">
+
+                            </label>
+
+                        </div>
+
+
+                        <!-- VASEN -->
+
+                        <div class="photo-row">
+
+                            <div class="photo-row-icon">
+                                ◀️
+                            </div>
+
+                            <div class="photo-row-content">
+
+                                <strong>
+                                    Vasen sivu
+                                </strong>
+
+                                <span id="before-vasen-status">
+                                    Ei kuvaa
+                                </span>
+
+                            </div>
+
+                            <label class="photo-button">
+
+                                Lisää kuva
+
+                                <input type="file"
+                                       id="before-vasen"
+                                       accept="image/*"
+                                       capture="environment"
+                                       onchange="addPhoto('before', 'vasen')">
+
+                            </label>
+
+                        </div>
+
+
+                        <!-- OIKEA -->
+
+                        <div class="photo-row">
+
+                            <div class="photo-row-icon">
+                                ▶️
+                            </div>
+
+                            <div class="photo-row-content">
+
+                                <strong>
+                                    Oikea sivu
+                                </strong>
+
+                                <span id="before-oikea-status">
+                                    Ei kuvaa
+                                </span>
+
+                            </div>
+
+                            <label class="photo-button">
+
+                                Lisää kuva
+
+                                <input type="file"
+                                       id="before-oikea"
+                                       accept="image/*"
+                                       capture="environment"
+                                       onchange="addPhoto('before', 'oikea')">
+
+                            </label>
+
+                        </div>
+
+
+                        <!-- EDESTÄ -->
+
+                        <div class="photo-row">
+
+                            <div class="photo-row-icon">
+                                🚘
+                            </div>
+
+                            <div class="photo-row-content">
+
+                                <strong>
+                                    Edestä
+                                </strong>
+
+                                <span id="before-edesta-status">
+                                    Ei kuvaa
+                                </span>
+
+                            </div>
+
+                            <label class="photo-button">
+
+                                Lisää kuva
+
+                                <input type="file"
+                                       id="before-edesta"
+                                       accept="image/*"
+                                       capture="environment"
+                                       onchange="addPhoto('before', 'edesta')">
+
+                            </label>
+
+                        </div>
+
+
+                        <!-- TAKAA -->
+
+                        <div class="photo-row">
+
+                            <div class="photo-row-icon">
+                                🚗
+                            </div>
+
+                            <div class="photo-row-content">
+
+                                <strong>
+                                    Takaa
+                                </strong>
+
+                                <span id="before-takaa-status">
+                                    Ei kuvaa
+                                </span>
+
+                            </div>
+
+                            <label class="photo-button">
+
+                                Lisää kuva
+
+                                <input type="file"
+                                       id="before-takaa"
+                                       accept="image/*"
+                                       capture="environment"
+                                       onchange="addPhoto('before', 'takaa')">
+
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <div id="beforePreview"
+                         class="photo-preview"></div>
+
+                </div>
+
+
+                <button type="submit"
+                        class="submit-btn">
+                    🚗 Lisää siirto
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         LOPETA SIIRTO
+    ========================== -->
+
+    <div id="finishModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2>
+                    🏁 Lopeta siirto
+                </h2>
+
+                <button class="close-btn"
+                        onclick="closeFinishModal()">
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="finish-info">
+
+                <strong id="finishVehicle">
+                    Ajoneuvo
+                </strong>
+
+                <span id="finishRoute">
+                    Lähtö → Kohde
+                </span>
+
+            </div>
+
+
+            <div class="photo-section finish-photos">
+
+                <div class="photo-section-title">
+
+                    <div>
+
+                        <h3>
+                            📸 Kuvat kohteessa
+                        </h3>
+
+                        <p>
+                            Ota kuvat autosta toimituksen jälkeen.
+                        </p>
+
+                    </div>
+
+                    <span id="afterPhotoCount"
+                          class="photo-count">
+                        0 / 5
+                    </span>
+
+                </div>
+
+
+                <div class="photo-list">
+
+
+                    <!-- MITTARISTO -->
+
+                    <div class="photo-row">
+
+                        <div class="photo-row-icon">
+                            📊
+                        </div>
+
+                        <div class="photo-row-content">
+
+                            <strong>
+                                Mittaristo
+                            </strong>
+
+                            <span id="after-mittaristo-status">
+                                Ei kuvaa
+                            </span>
+
+                        </div>
+
+                        <label class="photo-button">
+
+                            Lisää kuva
+
+                            <input type="file"
+                                   id="after-mittaristo"
+                                   accept="image/*"
+                                   capture="environment"
+                                   onchange="addPhoto('after', 'mittaristo')">
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- VASEN -->
+
+                    <div class="photo-row">
+
+                        <div class="photo-row-icon">
+                            ◀️
+                        </div>
+
+                        <div class="photo-row-content">
+
+                            <strong>
+                                Vasen sivu
+                            </strong>
+
+                            <span id="after-vasen-status">
+                                Ei kuvaa
+                            </span>
+
+                        </div>
+
+                        <label class="photo-button">
+
+                            Lisää kuva
+
+                            <input type="file"
+                                   id="after-vasen"
+                                   accept="image/*"
+                                   capture="environment"
+                                   onchange="addPhoto('after', 'vasen')">
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- OIKEA -->
+
+                    <div class="photo-row">
+
+                        <div class="photo-row-icon">
+                            ▶️
+                        </div>
+
+                        <div class="photo-row-content">
+
+                            <strong>
+                                Oikea sivu
+                            </strong>
+
+                            <span id="after-oikea-status">
+                                Ei kuvaa
+                            </span>
+
+                        </div>
+
+                        <label class="photo-button">
+
+                            Lisää kuva
+
+                            <input type="file"
+                                   id="after-oikea"
+                                   accept="image/*"
+                                   capture="environment"
+                                   onchange="addPhoto('after', 'oikea')">
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- EDESTÄ -->
+
+                    <div class="photo-row">
+
+                        <div class="photo-row-icon">
+                            🚘
+                        </div>
+
+                        <div class="photo-row-content">
+
+                            <strong>
+                                Edestä
+                            </strong>
+
+                            <span id="after-edesta-status">
+                                Ei kuvaa
+                            </span>
+
+                        </div>
+
+                        <label class="photo-button">
+
+                            Lisää kuva
+
+                            <input type="file"
+                                   id="after-edesta"
+                                   accept="image/*"
+                                   capture="environment"
+                                   onchange="addPhoto('after', 'edesta')">
+
+                        </label>
+
+                    </div>
+
+
+                    <!-- TAKAA -->
+
+                    <div class="photo-row">
+
+                        <div class="photo-row-icon">
+                            🚗
+                        </div>
+
+                        <div class="photo-row-content">
+
+                            <strong>
+                                Takaa
+                            </strong>
+
+                            <span id="after-takaa-status">
+                                Ei kuvaa
+                            </span>
+
+                        </div>
+
+                        <label class="photo-button">
+
+                            Lisää kuva
+
+                            <input type="file"
+                                   id="after-takaa"
+                                   accept="image/*"
+                                   capture="environment"
+                                   onchange="addPhoto('after', 'takaa')">
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+
+                <div id="afterPreview"
+                     class="photo-preview"></div>
+
+            </div>
+
+
+            <button id="finishTransferBtn"
+                    class="submit-btn finish-btn"
+                    onclick="finishTransfer()"
+                    disabled>
+                📸 Lisää kaikki kuvat
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         TIEDOT
+    ========================== -->
+
+    <div id="detailsModal" class="modal">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h2 id="detailsTitle">
+                    Siirto
+                </h2>
+
+                <button onclick="closeDetails()"
+                        class="close-btn">
+                    ×
+                </button>
+
+            </div>
+
+            <div id="detailsContent"></div>
+
+        </div>
+
+    </div>
+
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
